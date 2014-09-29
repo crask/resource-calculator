@@ -10,16 +10,21 @@ $(document).ready(function() {
       // server by memory
       bymem = this.data(copynum, keylen, keynum, vallen) / mps;
       // server by cpu
-      qps = copynum * (rqps + wqps);
+      qps = rqps + wqps;
       bycpu = qps / (4 * Math.pow(10, 4));
       // server by net
       bynet = qps * (keylen + vallen) / (70 * Math.pow(10, 6));
-      return Math.max(bymem, bynet, bycpu);
+
+      $("#result-bymem").html(bymem.toFixed(2));
+      $("#result-bycpu").html(bycpu.toFixed(2));
+      $("#result-bynet").html(bynet.toFixed(2));
+
+      return Math.max(bymem * copynum, bynet * copynum, bycpu * copynum);
     }
   }
 
   sliders = [
-    {"id": "keylen", "type": "plain",    "min": 0,  "max": 255, "default": 64, "step": 16, "suffix": "Byte"},
+    {"id": "keylen", "type": "plain",    "min": 0,  "max": 255, "default": 64, "step": 16, "suffix": "B"},
     {"id": "keynum", "type": "metric",   "min": 50, "max": 115, "default": 80, "step": 1,  "suffix": "个"},
     {"id": "vallen", "type": "imperial", "min": 0,  "max": 60,  "default": 30, "step": 1,  "suffix": "B"},
     {"id": "rqps",   "type": "metric",   "min": 20, "max": 80,  "default": 40, "step": 1,  "suffix": "/s"},
@@ -49,6 +54,12 @@ $(document).ready(function() {
     s = c.server(copy, keylen, keynum, vallen, rqps, wqps);
     $("#data-quantity").html(formatize("imperial", "%s", d) + "B");
     $("#server-quantity").html(formatize("metric", "%s", s));
+
+    $("#result-keylen").html($("#slider-ui-keylen").html());
+    $("#result-vallen").html($("#slider-ui-vallen").html());
+    $("#result-keynum").html($("#slider-ui-keynum").html());
+    $(".result-copynum").html(copy);
+
   }
 
   $.each(sliders, function(index, item) {

@@ -25,3 +25,7 @@
   color: #FF7000;
   font-size: 20px;
 }
+
+.info {
+  border-bottom:1px dotted #999;
+}

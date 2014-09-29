@@ -80,18 +80,19 @@
   <div class="form-group">
     <label class="col-sm-3 control-label" style="margin-top: 10px;">总资源量</label>
     <div class="col-sm-6">
-      <div class="result">
-        数据量 <span class="glyphicon glyphicon-info-sign info" data-toggle="tooltip" title="= (Key 长度 + Value 长度) * Key 总数"></span>：
-        <span id="data-quantity" class="quantity"></span></div>
-      <div class="result">
-        需机器 <span class="glyphicon glyphicon-info-sign info" data-toggle="tooltip" title="
-= max(按内存算的机器数, 按 CPU 算, 按网卡算)<br>
-其中：<br>
-按内存算 = 内存数 / 40GB 每台(64G*60%)<br>
-按 CPU 算 = 读写 QPS / 4 万每台<br>
-按网卡算 = 读写 QPS * KV 总长度/ 70MB 每台
-"></span>：
-        <span id="server-quantity" class="quantity"></span> 台</div>
+      <div class="result">数据量 =
+        (<span id="result-keylen" class="info" data-toggle="tooltip" title="Key的长度"></span> +
+        <span id="result-vallen" class="info" data-toggle="tooltip" title="Value的长度"></span>) *
+        <span id="result-keynum" class="info" data-toggle="tooltip" title="Key的总数"></span> *
+        <span class="result-copynum"></span>副本
+        = <span id="data-quantity" class="quantity"></span>
+      </div>
+      <div class="result">需机器 =
+        max(<span id="result-bymem" class="info" data-toggle="tooltip" title="按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
+        <span id="result-bycpu" class="info" data-toggle="tooltip" title="按CPU算需机器 = 读写QPS / 4万每台"></span>,
+        <span id="result-bynet" class="info" data-toggle="tooltip" title="按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
+        <span class="result-copynum"></span>副本
+        = <span id="server-quantity" class="quantity"></span> 台</div>
     </div>
     <div class="col-sm-3"></div>
   </div>
