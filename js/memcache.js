@@ -8,7 +8,7 @@ $(document).ready(function() {
       // memory per server
       mps = 40 * Math.pow(10, 9);
       // server by memory
-      bymem = this.data(copynum, keylen, keynum, vallen) / mps;
+      bymem = this.data(1, keylen, keynum, vallen) / mps;
       // server by cpu
       qps = rqps + wqps;
       bycpu = qps / (4 * Math.pow(10, 4));
