@@ -1,0 +1,27 @@
+.center {
+  text-align: center;
+  margin: 30px auto 40px;
+}
+
+.non-form-elem {
+  margin-top: 12px;
+}
+
+.non-form-elem-lg {
+  margin-top: 3px;
+}
+
+.slider-ui {
+  padding-top: 7px;
+}
+
+.result {
+  color: #999;
+  font-size: 13px;
+  margin: 10px 0 10px;
+}
+
+.quantity {
+  color: #FF7000;
+  font-size: 20px;
+}
