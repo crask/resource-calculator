@@ -2,7 +2,7 @@ $(document).ready(function(){
 
   Decimal = function() {
     this.decimal = 3;
-    this.units = ["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+    this.units = ["", "K", "M", "G", "T", "P", "E", "Z", "Y", "B", "N", "D", "C"];
     this.magnify = function(fmt, notation) {
       unit = Math.floor(notation / 10 / this.decimal);
       base = (notation % 10 == 0) ? 1 : (notation % 10);
@@ -36,7 +36,7 @@ $(document).ready(function(){
   Imperial = function() {}
   Metric = function() {
     this.decimal = 4;
-    this.units = ["", "万", "亿", "兆", "京"];
+    this.units = ["", "万", "亿", "兆", "京", "垓", "秭", "穰"];
   }
   Plain.prototype = new Decimal();
   Imperial.prototype = new Decimal();
