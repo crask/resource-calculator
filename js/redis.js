@@ -17,27 +17,74 @@ $(document).ready(function() {
   ];
 
   valueType = {
-    "string" : {"type": "single-item", "value-extra": 56,  "item-extra": 0},
-    "hash"   : {"type": "multi-item",  "value-extra": 120, "item-extra": 56},
-    "list"   : {"type": "multi-item",  "value-extra": 100, "item-extra": 24},
-    "set"    : {"type": "multi-item",  "value-extra": 120, "item-extra": 32},
-    "sorted-set" : {"type": "multi-item",  "value-extra": 148, "item-extra": 112}
+    "string" : {
+      "type"       : "single-item",
+      "threshold"  : {"num": 0, "len": 0},
+      "extra_cost" : {
+        "plain"  : {"value": 56, "item": 0},
+        "zipped" : {"value": 56, "item": 0}
+      }
+    },
+    "hash" : {
+      "type"       : "multi-item",
+      "threshold"  : {"num": 512, "len": 64},
+      "extra_cost" : {
+        "plain"  : {"value": 56+64, "item": 32+24},
+        "zipped" : {"value": 56+2,  "item": 10}
+      }
+    },
+    "list" : {
+      "type"       : "multi-item",
+      "threshold"  : {"num": 512, "len": 64},
+      "extra_cost" : {
+        "plain"  : {"value": 56+44, "item": 24},
+        "zipped" : {"value": 56+11, "item": 10}
+      }
+    },
+    "set" : {
+      "type"       : "multi-item",
+      "threshold"  : {"num": 0, "len": 0},
+      "extra_cost" : {
+        "plain"  : {"value": 56+64, "item": 32},
+        "zipped" : {"value": 56+64, "item": 0}
+      }
+    },
+    "sorted-set" : {
+      "type"       : "multi-item",
+      "threshold"  : {"num": 128, "len": 64},
+      "extra_cost" : {
+        "plain"  : {"value": 56+64+28, "item": 32+24+36+16},
+        "zipped" : {"value": 56+11,    "item": 10}
+      }
+    }
   };
 
   Calculator = function() {
-    this.data = function(copynum, keylen, keynum, valtype, valextra, itemlen, itemnum, itemextra) {
-      return (keylen + valextra + (itemlen + itemextra) * itemnum) * keynum * copynum * 1.15;
+    this.value = function(valtype, itemnum, itemlen) {
+      valmeta = valueType[valtype];
+      if (itemnum <= valmeta.threshold.num &&
+          itemlen <= valmeta.threshold.len) {
+        extra = valmeta.extra_cost.zipped;
+      } else {
+        extra = valmeta.extra_cost.plain;
+      }
+      $("#result-valextra").html(extra.value + "B");
+      $("#result-itemextra").html(extra.item + "B");
+      return (itemlen + extra.item) * itemnum + extra.value;
     }
-    this.server = function(copynum, keylen, keynum, valtype, valextra, itemlen, itemnum, itemextra, rbat, rqps, wbat, wqps) {
+    this.data = function(copynum, keylen, keynum, valtype, itemnum, itemlen) {
+      return (keylen + this.value(valtype, itemnum, itemlen)) * keynum * copynum * 1.15;
+    }
+    this.server = function(copynum, keylen, keynum, valtype, itemlen, itemnum, rbat, rqps, wbat, wqps) {
       // memory per server
       mps = 40 * Math.pow(10, 9);
       // server by memory
-      bymem = this.data(copynum, keylen, keynum, valtype, valextra, itemlen, itemnum, itemextra) / mps;
+      bymem = this.data(copynum, keylen, keynum, valtype, itemnum, itemlen) / mps;
       // server by cpu
       qps = rbat * rqps + wbat * wqps;
       bycpu = qps / (4 * Math.pow(10, 4));
       // server by net
-      bynet = qps * (keylen + valextra + (itemlen + itemextra) * itemnum) / (70 * Math.pow(10, 6));
+      bynet = qps * (keylen + this.value(valtype, itemnum, itemlen)) / (70 * Math.pow(10, 6));
 
       $("#result-bymem").html(bymem.toFixed(2));
       $("#result-bycpu").html(bycpu.toFixed(2));
@@ -68,17 +115,13 @@ $(document).ready(function() {
       }
       return formatize($("#slider-" + id).attr("type"), "%d", useValue);
     }
-    valmeta = valueType[valtype];
-    valtype = valmeta["type"];
-    valextra = valmeta["value-extra"];
-    itemextra = valmeta["item-extra"];
 
     keylen = formatizeWrapper("keylen", id, value);
     keynum = formatizeWrapper("keynum", id, value);
     itemlen = formatizeWrapper("itemlen", id, value);
-    if (valtype == "single-item") {
+    if (valueType[valtype].type == "single-item") {
       itemnum = 1;
-    } else if (valtype == "multi-item") {
+    } else if (valueType[valtype].type == "multi-item") {
       itemnum = formatizeWrapper("itemnum", id, value);
     }
     rbat = formatizeWrapper("rbat", id, value);
@@ -86,14 +129,13 @@ $(document).ready(function() {
     wbat = formatizeWrapper("wbat", id, value);
     wqps = formatizeWrapper("wqps", id, value);
 
-    d = c.data(copy, keylen, keynum, valtype, valextra, itemlen, itemnum, itemextra);
-    s = c.server(copy, keylen, keynum, valtype, valextra, itemlen, itemnum, itemextra, rbat, rqps, wbat, wqps);
+    d = c.data(copy, keylen, keynum, valtype, itemnum, itemlen);
+    s = c.server(copy, keylen, keynum, valtype, itemnum, itemlen, rbat, rqps, wbat, wqps);
     $("#data-quantity").html(formatize("imperial", "%s", d) + "B");
     $("#server-quantity").html(formatize("metric", "%s", s));
 
     $("#result-keylen").html($("#slider-ui-keylen").html());
     $("#result-keynum").html($("#slider-ui-keynum").html());
-    $("#result-valextra").html(valextra + "B");
     $("#result-itemlen").html($("#slider-ui-itemlen").html());
     if (valmeta["type"] == "single-item") {
       $("#result-value-single-item").show().html($("#slider-ui-itemlen").html());
@@ -102,7 +144,6 @@ $(document).ready(function() {
       $("#result-value-single-item").hide();
       $("#result-value-multi-item").show();
       $("#result-itemnum").html($("#slider-ui-itemnum").html());
-      $("#result-itemextra").html(itemextra + "B");
     }
     $(".result-copynum").html(copy);
   }
