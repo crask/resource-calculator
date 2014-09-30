@@ -31,11 +31,11 @@
       <div class="btn-group btn-group-sm non-form-elem-lg" data-toggle="buttons">
         <label id="region-beijing" class="region">
           <span class="region-desc">北京</span>
-          <input class="region-input" id="region-spinner-bj" disabled="disabled" value="2" />
+          <input class="region-input" id="region-spinner-bj" disabled="disabled" value="3" />
         </label>
         <label id="region-nanjing" class="region">
           <span class="region-desc">南京</span>
-          <input class="region-input" id="region-spinner-nj" disabled="disabled" value="2" />
+          <input class="region-input" id="region-spinner-nj" disabled="disabled" value="0" />
         </label>
         <label id="region-hangzhou" class="region">
           <span class="region-desc">杭州</span>
@@ -45,7 +45,7 @@
     </div>
     <div class="col-sm-3"></div>
   </div>
-  <input type="hidden" id="copynum" name="copynum" value="4" />
+  <input type="hidden" id="copynum" name="copynum" value="3" />
   <div class="form-group">
     <label class="col-sm-3 control-label">Key 的长度</label>
     <div class="col-sm-6"><div id="slider-keylen" class="non-form-elem"></div></div>
@@ -59,53 +59,61 @@
   <div class="form-group">
     <label class="col-sm-3 control-label">Value 数据类型</label>
     <div class="col-sm-6">
-      <div class="btn-group btn-group-sm" data-toggle="buttons">
-        <label class="btn btn-default active"><input type="radio" id="value-type-string" checked>String</label>
-        <label class="btn btn-default"><input type="radio" id="value-type-hash">Hash</label>
-        <label class="btn btn-default"><input type="radio" id="value-type-list">List</label>
-        <label class="btn btn-default"><input type="radio" id="value-type-set">Set</label>
-        <label class="btn btn-default"><input type="radio" id="value-type-sorted-set">Sorted Set</label>
+      <div class="btn-group btn-group-sm non-form-elem-lg" data-toggle="buttons">
+        <label class="btn btn-default value-type active" id="value-type-string" value-type="string"><input type="radio" checked>String</label>
+        <label class="btn btn-default value-type" id="value-type-hash" value-type="hash"><input type="radio">Hash</label>
+        <label class="btn btn-default value-type" id="value-type-list" value-type="list"><input type="radio">List</label>
+        <label class="btn btn-default value-type" id="value-type-set" value-type="set"><input type="radio">Set</label>
+		<label class="btn btn-default value-type" id="value-type-sorted-set" value-type="sorted-set"><input type="radio">Sorted Set</label>
       </div>
     </div>
     <div class="col-sm-3"></div>
   </div>
   <div class="form-group">
-    <label class="col-sm-3 control-label">Item 的长度</label>
-    <div class="col-sm-6"><div id="slider-vallen" class="non-form-elem"></div></div>
-    <div class="col-sm-3"><div id="slider-ui-vallen" class="slider-ui"></div></div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-3 control-label">Item 的个数</label>
-    <div class="col-sm-6"><div id="slider-valnum" class="non-form-elem"></div></div>
-    <div class="col-sm-3"><div id="slider-ui-valnum" class="slider-ui"></div></div>
+    <label id="label-vallen" class="col-sm-3 control-label">Value 的长度</label>
+    <div class="col-sm-2" style="display:none;"><div id="slider-itemnum" class="non-form-elem"></div></div>
+    <div class="col-sm-1" style="display:none;"><div id="slider-ui-itemnum" class="slider-ui info" data-toggle="tooltip" title="Item个数：value里包含的item平均个数"></div></div>
+    <div class="col-sm-6"><div id="slider-itemlen" class="non-form-elem"></div></div>
+    <div class="col-sm-3"><div id="slider-ui-itemlen" class="slider-ui info" data-toggle="tooltip" title="Item长度：value里包含的item平均大小"></div></div>
   </div>
   <div class="form-group">
     <label class="col-sm-3 control-label">单集群读 QPS</label>
-    <div class="col-sm-6"><div id="slider-rqps" class="non-form-elem"></div></div>
+    <div class="col-sm-2"><div id="slider-rbat" class="non-form-elem"></div></div>
+    <div class="col-sm-1"><div id="slider-ui-rbat" class="slider-ui info" data-toggle="tooltip" title="读批量个数：一个请求里的平均key个数"></div></div>
+    <div class="col-sm-3"><div id="slider-rqps" class="non-form-elem"></div></div>
     <div class="col-sm-3"><div id="slider-ui-rqps" class="slider-ui"></div></div>
   </div>
   <div class="form-group">
     <label class="col-sm-3 control-label">单集群写 QPS</label>
-    <div class="col-sm-6"><div id="slider-wqps" class="non-form-elem"></div></div>
+    <div class="col-sm-2"><div id="slider-wbat" class="non-form-elem"></div></div>
+    <div class="col-sm-1"><div id="slider-ui-wbat" class="slider-ui info" data-toggle="tooltip" title="写批量个数：一个请求里的平均key个数"></div></div>
+    <div class="col-sm-3"><div id="slider-wqps" class="non-form-elem"></div></div>
     <div class="col-sm-3"><div id="slider-ui-wqps" class="slider-ui"></div></div>
   </div>
   <div class="form-group">
     <label class="col-sm-3 control-label" style="margin-top: 10px;">总资源量</label>
-    <div class="col-sm-6">
+    <div class="col-sm-9">
       <div class="result">
-        数据量 <span class="glyphicon glyphicon-info-sign info" data-toggle="tooltip" title="= (Key 长度 + Value 长度) * Key 总数"></span>：
+        数据量 =
+        ( <span id="result-keylen" class="info" data-toggle="tooltip" title="Key的长度"></span> +
+        <span id="result-value-multi-item">
+          (<span id="result-itemlen" class="info" data-toggle="tooltip" title="Item的平均长度"></span> +
+          <span id="result-itemextra" class="info" data-toggle="tooltip" title="Item的额外开销"></span>) *
+          <span id="result-itemnum" class="info" data-toggle="tooltip" title="一个Value里Item的个数"></span>
+        </span>
+        <span id="result-value-single-item" class="info" data-toggle="tooltip" title="Value的平均长度"></span> +
+        <span id="result-valextra" class="info" data-toggle="tooltip" title="Value的额外开销"></span>
+        ) * <span id="result-keynum" class="info" data-toggle="tooltip" title="Key的个数"></span> *
+        <span class="result-copynum"></span>副本 *
+        <span class="info" data-toggle="tooltip" title="jemalloc的额外开销">115%</span> =
         <span id="data-quantity" class="quantity"></span></div>
-      <div class="result">
-        需机器 <span class="glyphicon glyphicon-info-sign info" data-toggle="tooltip" title="
-= max(按内存算的机器数, 按 CPU 算, 按网卡算)<br>
-其中：<br>
-按内存算 = 内存数 / 40GB 每台(64G*60%)<br>
-按 CPU 算 = 读写 QPS / 4 万每台<br>
-按网卡算 = 读写 QPS * KV 总长度/ 70MB 每台
-"></span>：
-        <span id="server-quantity" class="quantity"></span> 台</div>
+      <div class="result">需机器 =
+        max(<span id="result-bymem" class="info" data-toggle="tooltip" title="按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
+        <span id="result-bycpu" class="info" data-toggle="tooltip" title="按CPU算需机器 = 读写QPS / 4万每台"></span>,
+        <span id="result-bynet" class="info" data-toggle="tooltip" title="按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
+        <span class="result-copynum"></span>副本
+        = <span id="server-quantity" class="quantity"></span> 台</div>
     </div>
-    <div class="col-sm-3"></div>
   </div>
 </form>
 
