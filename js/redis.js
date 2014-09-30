@@ -10,9 +10,9 @@ $(document).ready(function() {
     {"id": "keynum",  "type": "metric",   "min": 50, "max": 115, "default": 80, "step": 1,  "suffix": "个"},
     {"id": "itemnum", "type": "metric",   "min": 0,  "max": 80,  "default": 20, "step": 1,  "suffix": "个"},
     {"id": "itemlen", "type": "imperial", "min": 0,  "max": 60,  "default": 30, "step": 1,  "suffix": "B"},
-    {"id": "rbat",    "type": "metric",   "min": 0,  "max": 30,  "default": 13, "step": 1,  "suffix": "个"},
+    {"id": "rbat",    "type": "metric",   "min": 0,  "max": 30,  "default": 10, "step": 1,  "suffix": "个"},
     {"id": "rqps",    "type": "metric",   "min": 20, "max": 80,  "default": 40, "step": 1,  "suffix": "/s"},
-    {"id": "wbat",    "type": "metric",   "min": 0,  "max": 30,  "default": 13, "step": 1,  "suffix": "个"},
+    {"id": "wbat",    "type": "metric",   "min": 0,  "max": 30,  "default": 10, "step": 1,  "suffix": "个"},
     {"id": "wqps",    "type": "metric",   "min": 10, "max": 70,  "default": 30, "step": 1,  "suffix": "/s"},
   ];
 
@@ -141,15 +141,11 @@ $(document).ready(function() {
     type = $(this).attr("value-type");
     item = valueType[type];
     if (item.type == "single-item") {
-      $("#slider-itemnum").parent().hide();
-      $("#slider-ui-itemnum").parent().hide();
-      $("#slider-itemlen").parent().removeClass("col-sm-3").addClass("col-sm-6");
-      $("#label-vallen").html("Value 的长度");
+      $("#slider-itemnum").parent().parent().hide();
+      $("#label-itemlen").html("Value 的长度");
     } else if (item.type == "multi-item") {
-      $("#slider-itemnum").parent().show();
-      $("#slider-ui-itemnum").parent().show();
-      $("#slider-itemlen").parent().removeClass("col-sm-6").addClass("col-sm-3");
-      $("#label-vallen").html("Value 中 item 的个数/长度");
+      $("#slider-itemnum").parent().parent().show();
+      $("#label-itemlen").html("Item 的长度");
     }
     dataChange("value-type", this);
   });

@@ -26,12 +26,12 @@
 
 <form class="form-horizontal" role="form">
   <div class="form-group">
-    <label class="col-sm-3 control-label">部署地域</label>
+    <label class="col-sm-3 control-label">部署副本数</label>
     <div class="col-sm-6">
       <div class="btn-group btn-group-sm non-form-elem-lg" data-toggle="buttons">
         <label id="region-beijing" class="region">
           <span class="region-desc">北京</span>
-          <input class="region-input" id="region-spinner-bj" disabled="disabled" value="3" />
+          <input class="region-input" id="region-spinner-bj" disabled="disabled" value="2" />
         </label>
         <label id="region-nanjing" class="region">
           <span class="region-desc">南京</span>
@@ -45,7 +45,6 @@
     </div>
     <div class="col-sm-3"></div>
   </div>
-  <input type="hidden" id="copynum" name="copynum" value="3" />
   <div class="form-group">
     <label class="col-sm-3 control-label">Key 的长度</label>
     <div class="col-sm-6"><div id="slider-keylen" class="non-form-elem"></div></div>
@@ -69,10 +68,13 @@
     </div>
     <div class="col-sm-3"></div>
   </div>
+  <div class="form-group" style="display:none">
+    <label id="label-itemnum" class="col-sm-3 control-label">Item 的个数</label>
+    <div class="col-sm-6"><div id="slider-itemnum" class="non-form-elem"></div></div>
+    <div class="col-sm-3"><div id="slider-ui-itemnum" class="slider-ui info" data-toggle="tooltip" title="Item个数：value里包含的item平均个数"></div></div>
+  </div>
   <div class="form-group">
-    <label id="label-vallen" class="col-sm-3 control-label">Value 的长度</label>
-    <div class="col-sm-2" style="display:none;"><div id="slider-itemnum" class="non-form-elem"></div></div>
-    <div class="col-sm-1" style="display:none;"><div id="slider-ui-itemnum" class="slider-ui info" data-toggle="tooltip" title="Item个数：value里包含的item平均个数"></div></div>
+    <label id="label-itemlen" class="col-sm-3 control-label">Value 的长度</label>
     <div class="col-sm-6"><div id="slider-itemlen" class="non-form-elem"></div></div>
     <div class="col-sm-3"><div id="slider-ui-itemlen" class="slider-ui info" data-toggle="tooltip" title="Item长度：value里包含的item平均大小"></div></div>
   </div>
