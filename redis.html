@@ -106,15 +106,15 @@
         <span id="result-value-single-item" class="info" data-toggle="tooltip" title="Value的平均长度"></span> +
         <span id="result-value-overhead" class="info" data-toggle="tooltip" title="Value的额外开销"></span>
         ) * <span id="result-key-num" class="info" data-toggle="tooltip" title="Key的个数"></span> *
-        <span class="result-copy-num"></span>副本 *
+        <span id="result-space-copy-num"></span>副本 *
         <span class="info" data-toggle="tooltip" title="jemalloc的额外开销">115%</span> =
-        <span id="data-quantity" class="quantity"></span></div>
+        <span id="result-space" class="quantity"></span></div>
       <div class="result">需机器 =
         max(<span id="result-by-space" class="info" data-toggle="tooltip" title="按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
         <span id="result-by-cpu" class="info" data-toggle="tooltip" title="按CPU算需机器 = 读写QPS / 4万每台"></span>,
         <span id="result-by-net" class="info" data-toggle="tooltip" title="按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
-        <span class="result-copy-num"></span>副本
-        = <span id="server-quantity" class="quantity"></span> 台</div>
+        <span id="result-server-copy-num"></span>副本
+        = <span id="result-server" class="quantity"></span> 台</div>
     </div>
   </div>
 </form>

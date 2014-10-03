@@ -32,6 +32,20 @@ $(document).ready(function() {
     }
   }
 
+  fillResult = function(copy, space, server) {
+    $("#result-key-len").html($("#slider-ui-key-len").html());
+    $("#result-key-num").html($("#slider-ui-key-num").html());
+    $("#result-value-len").html($("#slider-ui-value-len").html());
+    $("#result-space-copy-num").html(copy);
+    $("#result-space").html(formatize("imperial", "%s", space * copy) + "B");
+
+    $("#result-by-space").html(server.bySpace.toFixed(2));
+    $("#result-by-cpu").html(server.byCpu.toFixed(2));
+    $("#result-by-net").html(server.byNet.toFixed(2));
+    $("#result-server-copy-num").html(copy);
+    $("#result-server").html(formatize("metric", "%s", server.actual * copy));
+  }
+
   dataInit = dataChange = function(id, value) {
     var copy = 0;
     $(".checkbox-region").each(function() {
@@ -51,18 +65,7 @@ $(document).ready(function() {
 
     space = c.space(keyLen, keyNum, valueLen);
     server = c.server(keyLen, keyNum, valueLen, readQps, writeQps);
-    $("#data-quantity").html(formatize("imperial", "%s", space * copy) + "B");
-    $("#server-quantity").html(formatize("metric", "%s", server.actual * copy));
-
-    $("#result-by-space").html(server.bySpace.toFixed(2));
-    $("#result-by-cpu").html(server.byCpu.toFixed(2));
-    $("#result-by-net").html(server.byNet.toFixed(2));
-
-    $("#result-key-len").html($("#slider-ui-key-len").html());
-    $("#result-key-num").html($("#slider-ui-key-num").html());
-    $("#result-value-len").html($("#slider-ui-value-len").html());
-    $(".result-copynum").html(copy);
-
+    fillResult(copy, space, server);
   }
 
   $.each(sliders, function(id, item) {

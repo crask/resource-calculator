@@ -93,6 +93,30 @@ $(document).ready(function() {
     }
   }
 
+  fillResult = function(config, copy, space, server) {
+    $("#result-key-len").html($("#slider-ui-key-len").html());
+    $("#result-key-num").html($("#slider-ui-key-num").html());
+    $("#result-item-len").html($("#slider-ui-item-len").html());
+    $("#result-item-num").html($("#slider-ui-item-num").html());
+    if (config.type == "single-item") {
+      $("#result-value-single-item").show().html($("#slider-ui-item-len").html());
+      $("#result-value-multi-item").hide();
+    } else {
+      $("#result-value-single-item").hide();
+      $("#result-value-multi-item").show();
+    }
+    $("#result-item-overhead").html(space.single.overhead.item);
+    $("#result-value-overhead").html(space.single.overhead.value);
+    $("#result-space-copy-num").html(copy);
+    $("#result-space").html(formatize("imperial", "%s", space.total * copy) + "B");
+
+    $("#result-by-space").html(server.bySpace.toFixed(2));
+    $("#result-by-cpu").html(server.byCpu.toFixed(2));
+    $("#result-by-net").html(server.byNet.toFixed(2));
+    $("#result-server-copy-num").html(copy);
+    $("#result-server").html(formatize("metric", "%s", server.actual * copy));
+  }
+
   dataInit = dataChange = function(obj, id, value) {
     // decide what value-type
     selector = (obj == "value-type") ? id : ".value-type.active";
@@ -132,29 +156,7 @@ $(document).ready(function() {
 
     space  = c.space(keyLen, keyNum, valueType, itemNum, itemLen);
     server = c.server(keyLen, keyNum, valueType, itemNum, itemLen, readBat, readQps, writeBat, writeQps);
-
-    $("#result-item-overhead").html(space.single.overhead.item);
-    $("#result-value-overhead").html(space.single.overhead.value);
-
-    $("#result-by-space").html(server.bySpace.toFixed(2));
-    $("#result-by-cpu").html(server.byCpu.toFixed(2));
-    $("#result-by-net").html(server.byNet.toFixed(2));
-
-    $("#data-quantity").html(formatize("imperial", "%s", space.total * copy) + "B");
-    $("#server-quantity").html(formatize("metric", "%s", server.actual * copy));
-
-    $("#result-key-len").html($("#slider-ui-key-len").html());
-    $("#result-key-num").html($("#slider-ui-key-num").html());
-    $("#result-item-len").html($("#slider-ui-item-len").html());
-    if (config.type == "single-item") {
-      $("#result-value-single-item").show().html($("#slider-ui-item-len").html());
-      $("#result-value-multi-item").hide();
-    } else {
-      $("#result-value-single-item").hide();
-      $("#result-value-multi-item").show();
-      $("#result-item-num").html($("#slider-ui-item-num").html());
-    }
-    $(".result-copy-num").html(copy);
+    fillResult(config, copy, space, server);
   }
 
   $.each(sliders, function(id, item) {
