@@ -1,8 +1,11 @@
 $(document).ready(function() {
 
   Calculator = function() {
+    this.length = function(keylen, vallen) {
+      return keylen + vallen;
+    }
     this.data = function(copynum, keylen, keynum, vallen) {
-      return (keylen + vallen) * keynum * copynum;
+      return this.length(keylen, vallen) * keynum * copynum;
     }
     this.server = function(copynum, keylen, keynum, vallen, rqps, wqps) {
       // memory per server
@@ -13,7 +16,7 @@ $(document).ready(function() {
       qps = rqps + wqps;
       bycpu = qps / (4 * Math.pow(10, 4));
       // server by net
-      bynet = qps * (keylen + vallen) / (70 * Math.pow(10, 6));
+      bynet = qps * this.length(keylen, vallen) / (70 * Math.pow(10, 6));
 
       $("#result-bymem").html(bymem.toFixed(2));
       $("#result-bycpu").html(bycpu.toFixed(2));
@@ -23,13 +26,13 @@ $(document).ready(function() {
     }
   }
 
-  sliders = [
-    {"id": "keylen", "type": "plain",    "min": 0,  "max": 255, "default": 64, "step": 16, "suffix": "B"},
-    {"id": "keynum", "type": "metric",   "min": 50, "max": 115, "default": 80, "step": 1,  "suffix": "个"},
-    {"id": "vallen", "type": "imperial", "min": 0,  "max": 60,  "default": 30, "step": 1,  "suffix": "B"},
-    {"id": "rqps",   "type": "metric",   "min": 20, "max": 80,  "default": 40, "step": 1,  "suffix": "/s"},
-    {"id": "wqps",   "type": "metric",   "min": 10, "max": 70,  "default": 30, "step": 1,  "suffix": "/s"},
-  ];
+  sliders = {
+    "keylen": {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
+    "keynum": {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
+    "vallen": {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
+    "rqps"  : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
+    "wqps"  : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
+  };
 
   dataInit = dataChange = function(id, value) {
     var copy = 0;
@@ -59,20 +62,20 @@ $(document).ready(function() {
 
   }
 
-  $.each(sliders, function(index, item) {
-    $("#slider-" + item.id).slider({
+  $.each(sliders, function(id, item) {
+    $("#slider-" + id).slider({
       range: "min",
       min: item.min,
       max: item.max,
       value: item.default,
       step: item.step,
       slide: function (event, ui) {
-        $("#slider-ui-" + item.id).html(formatize(item.type, "%p", ui.value) + item.suffix);
-        dataChange(item.id, ui.value);
+        $("#slider-ui-" + id).html(formatize(item.type, "%p", ui.value) + item.suffix);
+        dataChange(id, ui.value);
       }
     });
-    $("#slider-" + item.id).attr("type", item.type);
-    $("#slider-ui-" + item.id).html(formatize(item.type, "%p", $("#slider-" + item.id).slider("value")) + item.suffix);
+    $("#slider-" + id).attr("type", item.type);
+    $("#slider-ui-" + id).html(formatize(item.type, "%p", $("#slider-" + id).slider("value")) + item.suffix);
   });
 
   $(".region").click(function() {
