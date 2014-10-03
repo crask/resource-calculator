@@ -30,11 +30,8 @@ $(document).ready(function() {
     {"id": "rqps",   "type": "metric",   "min": 20, "max": 80,  "default": 40, "step": 1,  "suffix": "/s"},
     {"id": "wqps",   "type": "metric",   "min": 10, "max": 70,  "default": 30, "step": 1,  "suffix": "/s"},
   ];
-  copies = [];
-  // copies = ["1", "2", "3"];
 
   dataInit = dataChange = function(id, value) {
-    // var copy = parseInt($("#copynum").attr("value"), 10);
     var copy = 0;
     $(".checkbox-region").each(function() {
       if ($(this).attr("include") == "yes") {
@@ -76,15 +73,6 @@ $(document).ready(function() {
     });
     $("#slider-" + item.id).attr("type", item.type);
     $("#slider-ui-" + item.id).html(formatize(item.type, "%p", $("#slider-" + item.id).slider("value")) + item.suffix);
-  });
-
-  $.each(copies, function(index, item) {
-    $("#copynum-" + item).click(function() {
-      $(".copynum").removeClass("active");
-      $(this).addClass("active");
-      $("#copynum").val(item);
-      dataChange();
-    });
   });
 
   $(".region").click(function() {

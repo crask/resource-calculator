@@ -1,10 +1,5 @@
 $(document).ready(function() {
 
-  spinners = ["bj", "nj", "hz"];
-  $.each(spinners, function(index, item) {
-    $("#region-spinner-" + item).spinner();
-  });
-
   sliders = [
     {"id": "keylen",  "type": "plain",    "min": 0,  "max": 255, "default": 64, "step": 16, "suffix": "B"},
     {"id": "keynum",  "type": "metric",   "min": 50, "max": 115, "default": 80, "step": 1,  "suffix": "个"},
@@ -164,6 +159,7 @@ $(document).ready(function() {
     $("#slider-ui-" + item.id).html(formatize(item.type, "%p", $("#slider-" + item.id).slider("value")) + item.suffix);
   });
 
+  $(".region-input").spinner();
   $(".ui-spinner-button").click(function() {
     dataChange();
   });
