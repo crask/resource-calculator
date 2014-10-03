@@ -1,38 +1,36 @@
 $(document).ready(function() {
 
+  sliders = {
+    "key-len"   : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
+    "key-num"   : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
+    "val-len"   : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
+    "read-qps"  : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
+    "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
+  };
+
   Calculator = function() {
-    this.length = function(keylen, vallen) {
-      return keylen + vallen;
+    this.single = function(keyLen, valueLen) {
+      return keyLen + valueLen;
     }
-    this.data = function(copynum, keylen, keynum, vallen) {
-      return this.length(keylen, vallen) * keynum * copynum;
+    this.space = function(keyLen, keyNum, valueLen) {
+      return this.single(keyLen, valueLen) * keyNum;
     }
-    this.server = function(copynum, keylen, keynum, vallen, rqps, wqps) {
-      // memory per server
-      mps = 40 * Math.pow(10, 9);
+    this.server = function(keyLen, keyNum, valueLen, readQps, writeQps) {
       // server by memory
-      bymem = this.data(1, keylen, keynum, vallen) / mps;
+      bySpace = this.space(keyLen, keyNum, valueLen) / (40 * Math.pow(10, 9));
       // server by cpu
-      qps = rqps + wqps;
-      bycpu = qps / (4 * Math.pow(10, 4));
-      // server by net
-      bynet = qps * this.length(keylen, vallen) / (70 * Math.pow(10, 6));
-
-      $("#result-bymem").html(bymem.toFixed(2));
-      $("#result-bycpu").html(bycpu.toFixed(2));
-      $("#result-bynet").html(bynet.toFixed(2));
-
-      return Math.max(bymem * copynum, bynet * copynum, bycpu * copynum);
+      allQps = readQps + writeQps;
+      byCpu = allQps / (4 * Math.pow(10, 4));
+      // server by throughput
+      byNet = allQps * this.single(keyLen, valueLen) / (70 * Math.pow(10, 6));
+      return {
+        bySpace: bySpace,
+        byCpu  : byCpu,
+        byNet  : byNet,
+        actual : Math.max(bySpace, byNet, byCpu)
+      }
     }
   }
-
-  sliders = {
-    "keylen": {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
-    "keynum": {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
-    "vallen": {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
-    "rqps"  : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
-    "wqps"  : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
-  };
 
   dataInit = dataChange = function(id, value) {
     var copy = 0;
@@ -45,19 +43,24 @@ $(document).ready(function() {
     formatizeWrapper = function(id, currId, value) {
       return formatize($("#slider-" + id).attr("type"), "%d", (id == currId) ? value : $("#slider-" + id).slider("value"));
     }
-    keylen = formatizeWrapper("keylen", id, value);
-    keynum = formatizeWrapper("keynum", id, value);
-    vallen = formatizeWrapper("vallen", id, value);
-    rqps = formatizeWrapper("rqps", id, value);
-    wqps = formatizeWrapper("wqps", id, value);
-    d = c.data(copy, keylen, keynum, vallen);
-    s = c.server(copy, keylen, keynum, vallen, rqps, wqps);
-    $("#data-quantity").html(formatize("imperial", "%s", d) + "B");
-    $("#server-quantity").html(formatize("metric", "%s", s));
+    keyLen = formatizeWrapper("key-len", id, value);
+    keyNum = formatizeWrapper("key-num", id, value);
+    valueLen = formatizeWrapper("val-len", id, value);
+    readQps  = formatizeWrapper("read-qps", id, value);
+    writeQps = formatizeWrapper("write-qps", id, value);
 
-    $("#result-keylen").html($("#slider-ui-keylen").html());
-    $("#result-vallen").html($("#slider-ui-vallen").html());
-    $("#result-keynum").html($("#slider-ui-keynum").html());
+    space = c.space(keyLen, keyNum, valueLen);
+    server = c.server(keyLen, keyNum, valueLen, readQps, writeQps);
+    $("#data-quantity").html(formatize("imperial", "%s", space * copy) + "B");
+    $("#server-quantity").html(formatize("metric", "%s", server.actual * copy));
+
+    $("#result-by-space").html(server.bySpace.toFixed(2));
+    $("#result-by-cpu").html(server.byCpu.toFixed(2));
+    $("#result-by-net").html(server.byNet.toFixed(2));
+
+    $("#result-key-len").html($("#slider-ui-key-len").html());
+    $("#result-val-len").html($("#slider-ui-val-len").html());
+    $("#result-key-num").html($("#slider-ui-key-num").html());
     $(".result-copynum").html(copy);
 
   }

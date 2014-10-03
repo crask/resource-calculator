@@ -1,14 +1,14 @@
 $(document).ready(function() {
 
   sliders = {
-    "keylen"  : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
-    "keynum"  : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
-    "itemnum" : {type: "metric",   min: 0,  max: 80,  default: 20, step: 1,  suffix: "个"},
-    "itemlen" : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
-    "rbat"    : {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
-    "rqps"    : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
-    "wbat"    : {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
-    "wqps"    : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"},
+    "key-len"  : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
+    "key-num"  : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
+    "item-num" : {type: "metric",   min: 0,  max: 80,  default: 20, step: 1,  suffix: "个"},
+    "item-len" : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
+    "read-bat" : {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
+    "read-qps" : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
+    "write-bat": {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
+    "write-qps": {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"},
   };
 
   valueConfig = {
@@ -55,50 +55,54 @@ $(document).ready(function() {
   };
 
   Calculator = function() {
-    this.length = function(keylen, valtype, itemnum, itemlen) {
-      config = valueConfig[valtype];
-      if (itemnum <= config.threshold.num &&
-          itemlen <= config.threshold.len) {
+    this.single = function(keyLen, valueType, itemNum, itemLen) {
+      config = valueConfig[valueType];
+      if (itemNum <= config.threshold.num &&
+          itemLen <= config.threshold.len) {
         overhead = config.overhead.zipped;
       } else {
         overhead = config.overhead.plain;
       }
-      $("#result-valextra").html(overhead.value + "B");
-      $("#result-itemextra").html(overhead.item + "B");
-      return keylen + (itemlen + overhead.item) * itemnum + overhead.value;
+      return {
+        overhead: overhead,
+        length:   keyLen + (itemLen + overhead.item) * itemNum + overhead.value
+      }
     }
-    this.data = function(copynum, keylen, keynum, valtype, itemnum, itemlen) {
-      return this.length(keylen, valtype, itemnum, itemlen) * keynum * copynum * 1.15;
+    this.space = function(keyLen, keyNum, valueType, itemNum, itemLen) {
+      single = this.single(keyLen, valueType, itemNum, itemLen);
+      return {
+        single: single,
+        total:  single.length * keyNum * 1.15
+      }
     }
-    this.server = function(copynum, keylen, keynum, valtype, itemlen, itemnum, rbat, rqps, wbat, wqps) {
-      // memory per server
-      mps = 40 * Math.pow(10, 9);
-      // server by memory
-      bymem = this.data(copynum, keylen, keynum, valtype, itemnum, itemlen) / mps;
+    this.server = function(keyLen, keyNum, valueType, itemLen, itemNum, readBat, readQps, writeBat, writeQps) {
+      // server by space
+      space = this.space(keyLen, keyNum, valueType, itemNum, itemLen);
+      bySpace = space.total / (40 * Math.pow(10, 9));
       // server by cpu
-      qps = rbat * rqps + wbat * wqps;
-      bycpu = qps / (4 * Math.pow(10, 4));
-      // server by net
-      bynet = qps * this.length(keylen, valtype, itemnum, itemlen) / (70 * Math.pow(10, 6));
-
-      $("#result-bymem").html(bymem.toFixed(2));
-      $("#result-bycpu").html(bycpu.toFixed(2));
-      $("#result-bynet").html(bynet.toFixed(2));
-
-      return Math.max(copynum * bymem, copynum * bynet, copynum * bycpu);
+      allQps = readBat * readQps + writeBat * writeQps;
+      byCpu = allQps / (4 * Math.pow(10, 4));
+      // server by net throughput
+      byNet = allQps * space.single.length / (70 * Math.pow(10, 6));
+      return {
+        bySpace : bySpace,
+        byCpu   : byCpu,
+        byNet   : byNet,
+        actual  : Math.max(bySpace, byNet, byCpu),
+      }
     }
   }
 
   dataInit = dataChange = function(obj, id, value) {
     // decide what value-type
     selector = (obj == "value-type") ? id : ".value-type.active";
-    valtype = $(selector).attr("value-type");
+    valueType = $(selector).attr("value-type");
     // get number of copy
     var copy = 0;
     $(".region-input").each(function() {
-      idccopy = parseInt($(this).val());
-      if (idccopy > 0) {
-        copy += idccopy;
+      idcCopy = parseInt($(this).val());
+      if (idcCopy > 0) {
+        copy += idcCopy;
       }
     });
     c = new Calculator();
@@ -111,38 +115,46 @@ $(document).ready(function() {
       return formatize($("#slider-" + id).attr("type"), "%d", useValue);
     }
 
-    config = valueConfig[valtype];
+    config = valueConfig[valueType];
 
-    keylen = formatizeWrapper("keylen", id, value);
-    keynum = formatizeWrapper("keynum", id, value);
-    itemlen = formatizeWrapper("itemlen", id, value);
+    keyLen = formatizeWrapper("key-len", id, value);
+    keyNum = formatizeWrapper("key-num", id, value);
+    itemLen = formatizeWrapper("item-len", id, value);
     if (config.type == "single-item") {
-      itemnum = 1;
+      itemNum = 1;
     } else if (config.type == "multi-item") {
-      itemnum = formatizeWrapper("itemnum", id, value);
+      itemNum = formatizeWrapper("item-num", id, value);
     }
-    rbat = formatizeWrapper("rbat", id, value);
-    rqps = formatizeWrapper("rqps", id, value);
-    wbat = formatizeWrapper("wbat", id, value);
-    wqps = formatizeWrapper("wqps", id, value);
+    readBat = formatizeWrapper("read-bat", id, value);
+    readQps = formatizeWrapper("read-qps", id, value);
+    writeBat = formatizeWrapper("write-bat", id, value);
+    writeQps = formatizeWrapper("write-qps", id, value);
 
-    d = c.data(copy, keylen, keynum, valtype, itemnum, itemlen);
-    s = c.server(copy, keylen, keynum, valtype, itemnum, itemlen, rbat, rqps, wbat, wqps);
-    $("#data-quantity").html(formatize("imperial", "%s", d) + "B");
-    $("#server-quantity").html(formatize("metric", "%s", s));
+    space  = c.space(keyLen, keyNum, valueType, itemNum, itemLen);
+    server = c.server(keyLen, keyNum, valueType, itemNum, itemLen, readBat, readQps, writeBat, writeQps);
 
-    $("#result-keylen").html($("#slider-ui-keylen").html());
-    $("#result-keynum").html($("#slider-ui-keynum").html());
-    $("#result-itemlen").html($("#slider-ui-itemlen").html());
+    $("#result-item-overhead").html(space.single.overhead.item);
+    $("#result-value-overhead").html(space.single.overhead.value);
+
+    $("#result-by-space").html(server.bySpace.toFixed(2));
+    $("#result-by-cpu").html(server.byCpu.toFixed(2));
+    $("#result-by-net").html(server.byNet.toFixed(2));
+
+    $("#data-quantity").html(formatize("imperial", "%s", space.total * copy) + "B");
+    $("#server-quantity").html(formatize("metric", "%s", server.actual * copy));
+
+    $("#result-key-len").html($("#slider-ui-key-len").html());
+    $("#result-key-num").html($("#slider-ui-key-num").html());
+    $("#result-item-len").html($("#slider-ui-item-len").html());
     if (config == "single-item") {
-      $("#result-value-single-item").show().html($("#slider-ui-itemlen").html());
+      $("#result-value-single-item").show().html($("#slider-ui-item-len").html());
       $("#result-value-multi-item").hide();
     } else {
       $("#result-value-single-item").hide();
       $("#result-value-multi-item").show();
-      $("#result-itemnum").html($("#slider-ui-itemnum").html());
+      $("#result-item-num").html($("#slider-ui-item-num").html());
     }
-    $(".result-copynum").html(copy);
+    $(".result-copy-num").html(copy);
   }
 
   $.each(sliders, function(id, item) {
@@ -163,28 +175,22 @@ $(document).ready(function() {
 
   $(".region-input").spinner();
   $(".ui-spinner-button").click(function() {
-    dataChange();
-  });
-
-  validateCopies = function(button) {
-    spinner = $(button).siblings("input");
+    spinner = $(this).siblings("input");
     value = spinner.spinner("value");
     if (value <= 0) {
       spinner.spinner("value", 0);
     }
-  }
-  $(".ui-spinner-up").click(function() { validateCopies(this); });
-  $(".ui-spinner-down").click(function() { validateCopies(this); });
+    dataChange();
+  });
 
   $(".value-type").click(function() {
-    type = $(this).attr("value-type");
-    item = valueConfig[type];
-    if (item.type == "single-item") {
-      $("#slider-itemnum").parent().parent().hide();
-      $("#label-itemlen").html("Value 的长度");
-    } else if (item.type == "multi-item") {
-      $("#slider-itemnum").parent().parent().show();
-      $("#label-itemlen").html("Item 的长度");
+    config = valueConfig[$(this).attr("value-type")];
+    if (config.type == "single-item") {
+      $("#slider-item-num").parent().parent().hide();
+      $("#label-item-len").html("Value 的长度");
+    } else if (config.type == "multi-item") {
+      $("#slider-item-num").parent().parent().show();
+      $("#label-item-len").html("Item 的长度");
     }
     dataChange("value-type", this);
   });
