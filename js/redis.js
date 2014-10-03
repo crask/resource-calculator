@@ -146,7 +146,7 @@ $(document).ready(function() {
     $("#result-key-len").html($("#slider-ui-key-len").html());
     $("#result-key-num").html($("#slider-ui-key-num").html());
     $("#result-item-len").html($("#slider-ui-item-len").html());
-    if (config == "single-item") {
+    if (config.type == "single-item") {
       $("#result-value-single-item").show().html($("#slider-ui-item-len").html());
       $("#result-value-multi-item").hide();
     } else {
