@@ -3,7 +3,7 @@ $(document).ready(function() {
   sliders = {
     "key-len"   : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
     "key-num"   : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
-    "val-len"   : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
+    "value-len" : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
     "read-qps"  : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
     "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
   };
@@ -45,7 +45,7 @@ $(document).ready(function() {
     }
     keyLen = formatizeWrapper("key-len", id, value);
     keyNum = formatizeWrapper("key-num", id, value);
-    valueLen = formatizeWrapper("val-len", id, value);
+    valueLen = formatizeWrapper("value-len", id, value);
     readQps  = formatizeWrapper("read-qps", id, value);
     writeQps = formatizeWrapper("write-qps", id, value);
 
@@ -59,8 +59,8 @@ $(document).ready(function() {
     $("#result-by-net").html(server.byNet.toFixed(2));
 
     $("#result-key-len").html($("#slider-ui-key-len").html());
-    $("#result-val-len").html($("#slider-ui-val-len").html());
     $("#result-key-num").html($("#slider-ui-key-num").html());
+    $("#result-value-len").html($("#slider-ui-value-len").html());
     $(".result-copynum").html(copy);
 
   }
