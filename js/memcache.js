@@ -8,14 +8,14 @@ $(document).ready(function() {
     "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
   };
 
-  Calculator = function() {
-    this.single = function(keyLen, valueLen) {
+  Calculator = {
+    single: function(keyLen, valueLen) {
       return keyLen + valueLen;
-    }
-    this.space = function(keyLen, keyNum, valueLen) {
+    },
+    space: function(keyLen, keyNum, valueLen) {
       return this.single(keyLen, valueLen) * keyNum;
-    }
-    this.server = function(keyLen, keyNum, valueLen, readQps, writeQps) {
+    },
+    server: function(keyLen, keyNum, valueLen, readQps, writeQps) {
       // server by memory
       bySpace = this.space(keyLen, keyNum, valueLen) / (40 * Math.pow(10, 9));
       // server by cpu
@@ -32,39 +32,44 @@ $(document).ready(function() {
     }
   }
 
-  fillResult = function(copy, space, server) {
-    $("#result-key-len").html($("#slider-ui-key-len").html());
-    $("#result-key-num").html($("#slider-ui-key-num").html());
-    $("#result-value-len").html($("#slider-ui-value-len").html());
-    $("#result-space-copy-num").html(copy);
-    $("#result-space").html(formatize("imperial", "%s", space * copy) + "B");
-
-    $("#result-by-space").html(server.bySpace.toFixed(2));
-    $("#result-by-cpu").html(server.byCpu.toFixed(2));
-    $("#result-by-net").html(server.byNet.toFixed(2));
-    $("#result-server-copy-num").html(copy);
-    $("#result-server").html(formatize("metric", "%s", server.actual * copy));
-  }
-
-  dataInit = dataChange = function(id, value) {
+  Event = {};
+  Event.dataInit =
+  Event.dataChange = function(widget, id, value) {
     var copy = 0;
     $(".checkbox-region").each(function() {
       if ($(this).attr("include") == "yes") {
         copy += parseInt($(this).attr("idcs"));
       }
     });
-    c = new Calculator();
-    formatizeWrapper = function(id, currId, value) {
-      return formatize($("#slider-" + id).attr("type"), "%d", (id == currId) ? value : $("#slider-" + id).slider("value"));
+    getSlider = function(currId) {
+      if (widget == "slider" && id == currId) {
+        useValue = value;
+      } else {
+        useValue = $("#slider-" + currId).slider("value");
+      }
+      return formatize($("#slider-" + currId).attr("type"), "%d", useValue);
     }
-    keyLen = formatizeWrapper("key-len", id, value);
-    keyNum = formatizeWrapper("key-num", id, value);
-    valueLen = formatizeWrapper("value-len", id, value);
-    readQps  = formatizeWrapper("read-qps", id, value);
-    writeQps = formatizeWrapper("write-qps", id, value);
+    keyLen = getSlider("key-len");
+    keyNum = getSlider("key-num");
+    valueLen = getSlider("value-len");
+    readQps  = getSlider("read-qps");
+    writeQps = getSlider("write-qps");
 
-    space = c.space(keyLen, keyNum, valueLen);
-    server = c.server(keyLen, keyNum, valueLen, readQps, writeQps);
+    space  = Calculator.space(keyLen, keyNum, valueLen);
+    server = Calculator.server(keyLen, keyNum, valueLen, readQps, writeQps);
+    fillResult = function(copy, space, server) {
+      $("#result-key-len").html($("#slider-ui-key-len").html());
+      $("#result-key-num").html($("#slider-ui-key-num").html());
+      $("#result-value-len").html($("#slider-ui-value-len").html());
+      $("#result-space-copy-num").html(copy);
+      $("#result-space").html(formatize("imperial", "%s", space * copy) + "B");
+
+      $("#result-by-space").html(server.bySpace.toFixed(2));
+      $("#result-by-cpu").html(server.byCpu.toFixed(2));
+      $("#result-by-net").html(server.byNet.toFixed(2));
+      $("#result-server-copy-num").html(copy);
+      $("#result-server").html(formatize("metric", "%s", server.actual * copy));
+    }
     fillResult(copy, space, server);
   }
 
@@ -77,7 +82,7 @@ $(document).ready(function() {
       step: item.step,
       slide: function (event, ui) {
         $("#slider-ui-" + id).html(formatize(item.type, "%p", ui.value) + item.suffix);
-        dataChange(id, ui.value);
+        Event.dataChange("slider", id, ui.value);
       }
     });
     $("#slider-" + id).attr("type", item.type);
@@ -90,9 +95,9 @@ $(document).ready(function() {
     } else {
       $(this).children(".checkbox-region").attr("include", "yes");
     }
-    dataChange();
+    Event.dataChange();
   });
 
-  dataInit();
+  Event.dataInit();
 
 });
