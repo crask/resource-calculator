@@ -1,5 +1,14 @@
 $(document).ready(function() {
 
+  /**
+   *  widgets profile data
+   */
+  regions = {
+    "bj" : {idcs: 2, active: true},
+    "nj" : {idcs: 1, active: false},
+    "hz" : {idcs: 1, active: false}
+  };
+
   sliders = {
     "key-len"   : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
     "key-num"   : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
@@ -8,6 +17,9 @@ $(document).ready(function() {
     "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
   };
 
+  /**
+   *  formula of resource calculation
+   */
   Calculator = {
     single: function(keyLen, valueLen) {
       return keyLen + valueLen;
@@ -35,11 +47,21 @@ $(document).ready(function() {
   Event = {};
   Event.dataInit =
   Event.dataChange = function(widget, id, value) {
-    var copy = 0;
-    $(".checkbox-region").each(function() {
-      if ($(this).attr("include") == "yes") {
-        copy += parseInt($(this).attr("idcs"));
+    copy = 0;
+    getRegionCopy = function(currId, currItem) {
+      if (widget == "region" && id == currId) {
+        useValue = value;
+      } else {
+        if ($("#region-" + currId).hasClass("active")) {
+          useValue = currItem.idcs;
+        } else {
+          useValue = 0;
+        }
       }
+      return useValue;
+    }
+    $.each(regions, function(id, item) {
+      copy += getRegionCopy(id, item);
     });
     getSlider = function(currId) {
       if (widget == "slider" && id == currId) {
@@ -73,6 +95,22 @@ $(document).ready(function() {
     fillResult(copy, space, server);
   }
 
+  /**
+   *  init widgets
+   */
+  $.each(regions, function(id, item) {
+    $("#region-" + id).click(function() {
+      if ($(this).hasClass("active")) {
+        Event.dataChange("region", id, 0);
+      } else {
+        Event.dataChange("region", id, item.idcs);
+      }
+    });
+    if (item.active) {
+      $("#region-" + id).addClass("active");
+    }
+  });
+
   $.each(sliders, function(id, item) {
     $("#slider-" + id).slider({
       range: "min",
@@ -87,15 +125,6 @@ $(document).ready(function() {
     });
     $("#slider-" + id).attr("type", item.type);
     $("#slider-ui-" + id).html(formatize(item.type, "%p", $("#slider-" + id).slider("value")) + item.suffix);
-  });
-
-  $(".region").click(function() {
-    if ($(this).hasClass("active")) {
-      $(this).children(".checkbox-region").attr("include", "no");
-    } else {
-      $(this).children(".checkbox-region").attr("include", "yes");
-    }
-    Event.dataChange();
   });
 
   Event.dataInit();
