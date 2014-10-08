@@ -11,13 +11,13 @@ $(document).ready(function() {
 
   sliders = {
     "key-len"  : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
-    "key-num"  : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
-    "item-num" : {type: "metric",   min: 0,  max: 80,  default: 20, step: 1,  suffix: "个"},
-    "item-len" : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
+    "key-num"  : {type: "metric",   min: 50, max: 100, default: 70, step: 1,  suffix: "个"},
+    "item-num" : {type: "metric",   min: 0,  max: 70,  default: 13, step: 1,  suffix: "个"},
+    "item-len" : {type: "imperial", min: 0,  max: 60,  default: 25, step: 1,  suffix: "B"},
     "read-bat" : {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
-    "read-qps" : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
+    "read-qps" : {type: "metric",   min: 20, max: 70,  default: 30, step: 1,  suffix: "/s"},
     "write-bat": {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
-    "write-qps": {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"},
+    "write-qps": {type: "metric",   min: 10, max: 60,  default: 20, step: 1,  suffix: "/s"},
   };
 
   valueConfigs = {
