@@ -1,5 +1,14 @@
 $(document).ready(function() {
 
+  /**
+   *  widgets profile data
+   */
+  regions = {
+    "bj" : {idcs: 2},
+    "nj" : {idcs: 0},
+    "hz" : {idcs: 0}
+  };
+
   sliders = {
     "key-len"  : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
     "key-num"  : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
@@ -11,7 +20,7 @@ $(document).ready(function() {
     "write-qps": {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"},
   };
 
-  valueConfig = {
+  valueConfigs = {
     "string" : {
       type       : "single-item",
       threshold  : {num: 0, len: 0},
@@ -54,30 +63,32 @@ $(document).ready(function() {
     }
   };
 
+  /**
+   *  formula of resource calculation
+   */
   Calculator = {
-    single: function(keyLen, valueType, itemNum, itemLen) {
-      config = valueConfig[valueType];
-      if (itemNum <= config.threshold.num &&
-          itemLen <= config.threshold.len) {
-        overhead = config.overhead.zipped;
+    single: function(keyLen, valueConfig, itemNum, itemLen) {
+      if (itemNum <= valueConfig.threshold.num &&
+          itemLen <= valueConfig.threshold.len) {
+        overhead = valueConfig.overhead.zipped;
       } else {
-        overhead = config.overhead.plain;
+        overhead = valueConfig.overhead.plain;
       }
       return {
         overhead: overhead,
         length:   keyLen + (itemLen + overhead.item) * itemNum + overhead.value
       }
     },
-    space: function(keyLen, keyNum, valueType, itemNum, itemLen) {
-      single = this.single(keyLen, valueType, itemNum, itemLen);
+    space: function(keyLen, keyNum, valueConfig, itemNum, itemLen) {
+      single = this.single(keyLen, valueConfig, itemNum, itemLen);
       return {
         single: single,
         total:  single.length * keyNum * 1.15
       }
     },
-    server: function(keyLen, keyNum, valueType, itemNum, itemLen, readBat, readQps, writeBat, writeQps) {
+    server: function(keyLen, keyNum, valueConfig, itemNum, itemLen, readBat, readQps, writeBat, writeQps) {
       // server by space
-      space = this.space(keyLen, keyNum, valueType, itemNum, itemLen);
+      space = this.space(keyLen, keyNum, valueConfig, itemNum, itemLen);
       bySpace = space.total / (40 * Math.pow(10, 9));
       // server by cpu
       allQps = readBat * readQps + writeBat * writeQps;
@@ -96,17 +107,30 @@ $(document).ready(function() {
   Event = {};
   Event.dataInit =
   Event.dataChange = function(widget, id, value) {
-    // decide what value-type
-    selector = (widget == "value-type") ? id : ".value-type.active";
-    valueType = $(selector).attr("value-type");
+    // get value-type
+    getValueType = function() {
+      var currType;
+      if (widget == "value-type") {
+        currType = id;
+      } else {
+        $.each(valueConfigs, function(id, config) {
+          if ($("#value-type-" + id).hasClass("active")) {
+            currType = id;
+          }
+        });
+      }
+      return currType;
+    }
+    valueConfig = valueConfigs[getValueType()];
     // get number of copy
-    var copy = 0;
-    $(".region-input").each(function() {
-      idcCopy = parseInt($(this).val());
+    copy = 0;
+    $.each(regions, function(id, item) {
+      idcCopy = parseInt($("#region-spinner-" + id).val());
       if (idcCopy > 0) {
         copy += idcCopy;
       }
     });
+    // get slider value
     getSlider = function(currId) {
       if (widget == "slider" && id == currId) {
         useValue = value;
@@ -115,15 +139,12 @@ $(document).ready(function() {
       }
       return formatize($("#slider-" + currId).attr("type"), "%d", useValue);
     }
-
-    config = valueConfig[valueType];
-
     keyLen = getSlider("key-len");
     keyNum = getSlider("key-num");
     itemLen = getSlider("item-len");
-    if (config.type == "single-item") {
+    if (valueConfig.type == "single-item") {
       itemNum = 1;
-    } else if (config.type == "multi-item") {
+    } else if (valueConfig.type == "multi-item") {
       itemNum = getSlider("item-num");
     }
     readBat = getSlider("read-bat");
@@ -131,14 +152,14 @@ $(document).ready(function() {
     writeBat = getSlider("write-bat");
     writeQps = getSlider("write-qps");
 
-    space  = Calculator.space(keyLen, keyNum, valueType, itemNum, itemLen);
-    server = Calculator.server(keyLen, keyNum, valueType, itemNum, itemLen, readBat, readQps, writeBat, writeQps);
-    fillResult = function(config, copy, space, server) {
+    space  = Calculator.space(keyLen, keyNum, valueConfig, itemNum, itemLen);
+    server = Calculator.server(keyLen, keyNum, valueConfig, itemNum, itemLen, readBat, readQps, writeBat, writeQps);
+    fillResult = function(valueConfig, copy, space, server) {
       $("#result-key-len").html($("#slider-ui-key-len").html());
       $("#result-key-num").html($("#slider-ui-key-num").html());
       $("#result-item-len").html($("#slider-ui-item-len").html());
       $("#result-item-num").html($("#slider-ui-item-num").html());
-      if (config.type == "single-item") {
+      if (valueConfig.type == "single-item") {
         $("#result-value-single-item").show().html($("#slider-ui-item-len").html());
         $("#result-value-multi-item").hide();
       } else {
@@ -156,9 +177,12 @@ $(document).ready(function() {
       $("#result-server-copy-num").html(copy);
       $("#result-server").html(formatize("metric", "%s", server.actual * copy));
     }
-    fillResult(config, copy, space, server);
+    fillResult(valueConfig, copy, space, server);
   }
 
+  /**
+   *  init widgets
+   */
   $.each(sliders, function(id, item) {
     $("#slider-" + id).slider({
       range: "min",
@@ -175,26 +199,31 @@ $(document).ready(function() {
     $("#slider-ui-" + id).html(formatize(item.type, "%p", $("#slider-" + id).slider("value")) + item.suffix);
   });
 
-  $(".region-input").spinner();
-  $(".ui-spinner-button").click(function() {
-    spinner = $(this).siblings("input");
-    value = spinner.spinner("value");
-    if (value <= 0) {
-      spinner.spinner("value", 0);
-    }
-    Event.dataChange();
+  $.each(regions, function(id, item) {
+    $("#region-spinner-" + id)
+      .attr("disabled", "disabled")
+      .spinner().spinner("value", item.idcs);
+    $("#region-spinner-" + id).siblings().click(function() {
+      spinner = $(this).siblings("input");
+      value = spinner.spinner("value");
+      if (value <= 0) {
+        spinner.spinner("value", 0);
+      }
+      Event.dataChange();
+    });
   });
 
-  $(".value-type").click(function() {
-    config = valueConfig[$(this).attr("value-type")];
-    if (config.type == "single-item") {
-      $("#slider-item-num").parent().parent().hide();
-      $("#label-item-len").html("Value 的长度");
-    } else if (config.type == "multi-item") {
-      $("#slider-item-num").parent().parent().show();
-      $("#label-item-len").html("Item 的长度");
-    }
-    Event.dataChange("value-type", this);
+  $.each(valueConfigs, function(id, valueConfig) {
+    $("#value-type-" + id).click(function() {
+      if (valueConfig.type == "single-item") {
+        $("#slider-item-num").parent().parent().hide();
+        $("#label-item-len").html("Value 的长度");
+      } else if (valueConfig.type == "multi-item") {
+        $("#slider-item-num").parent().parent().show();
+        $("#label-item-len").html("Item 的长度");
+      }
+      Event.dataChange("value-type", id);
+    });
   });
 
   Event.dataInit();
