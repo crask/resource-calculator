@@ -75,7 +75,7 @@ $(document).ready(function() {
         total:  single.length * keyNum * 1.15
       }
     },
-    server: function(keyLen, keyNum, valueType, itemLen, itemNum, readBat, readQps, writeBat, writeQps) {
+    server: function(keyLen, keyNum, valueType, itemNum, itemLen, readBat, readQps, writeBat, writeQps) {
       // server by space
       space = this.space(keyLen, keyNum, valueType, itemNum, itemLen);
       bySpace = space.total / (40 * Math.pow(10, 9));
