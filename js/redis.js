@@ -196,6 +196,11 @@ $(document).ready(function() {
     });
     $("#result-sum-space").html(formatize("imperial", "%s", rawSpace) + "B");
     $("#result-sum-server").html(formatize("metric", "%s", rawServer));
+    if ($("div.shopping-good").size() <= 0) {
+      $("#text-empty-cart").show();
+	} else {
+      $("#text-empty-cart").hide();
+    }
   }
 
   /**
