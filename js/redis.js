@@ -20,6 +20,7 @@ $(document).ready(function() {
 
   valueConfigs = {
     "string" : {
+      label      : "String",
       type       : "single-item",
       threshold  : {num: 0, len: 0},
       overhead   : {
@@ -28,6 +29,7 @@ $(document).ready(function() {
       }
     },
     "hash" : {
+      label      : "Hash",
       type       : "multi-item",
       threshold  : {num: 512, len: 64},
       overhead   : {
@@ -36,6 +38,7 @@ $(document).ready(function() {
       }
     },
     "list" : {
+      label      : "List",
       type       : "multi-item",
       threshold  : {num: 512, len: 64},
       overhead   : {
@@ -44,6 +47,7 @@ $(document).ready(function() {
       }
     },
     "set" : {
+      label      : "Set",
       type       : "multi-item",
       threshold  : {num: 0, len: 0},
       overhead   : {
@@ -52,6 +56,7 @@ $(document).ready(function() {
       }
     },
     "sorted-set" : {
+      label      : "Sorted Set",
       type       : "multi-item",
       threshold  : {num: 128, len: 64},
       overhead   : {
@@ -102,22 +107,26 @@ $(document).ready(function() {
     }
   }
 
+  App = {
+    getValueType: function() {
+      $.each(valueConfigs, function(id, config) {
+        if ($("#value-type-" + id).hasClass("active")) {
+          currType = id;
+        }
+      });
+      return {
+        id: currType,
+        label: valueConfigs[currType].label
+      };
+    }
+  };
+
   Event = {};
   Event.dataInit =
   Event.dataChange = function(widget, id, value) {
     // get value-type
     getValueType = function() {
-      var currType;
-      if (widget == "value-type") {
-        currType = id;
-      } else {
-        $.each(valueConfigs, function(id, config) {
-          if ($("#value-type-" + id).hasClass("active")) {
-            currType = id;
-          }
-        });
-      }
-      return currType;
+      return (widget == "value-type") ? id : App.getValueType().id;
     }
     valueConfig = valueConfigs[getValueType()];
     // get number of copy
@@ -165,15 +174,28 @@ $(document).ready(function() {
       $("#result-item-overhead").html(space.single.overhead.item + "B");
       $("#result-value-overhead").html(space.single.overhead.value + "B");
       $("#result-space-copy-num").html(copy);
-      $("#result-space").html(formatize("imperial", "%s", space.total * copy) + "B");
+      $("#result-space")
+        .attr("raw", space.total * copy)
+        .html(formatize("imperial", "%s", space.total * copy) + "B");
 
       $("#result-by-space").html(server.bySpace.toFixed(2));
       $("#result-by-cpu").html(server.byCpu.toFixed(2));
       $("#result-by-net").html(server.byNet.toFixed(2));
       $("#result-server-copy-num").html(copy);
-      $("#result-server").html(formatize("metric", "%s", server.actual * copy));
+      $("#result-server")
+        .attr("raw", server.actual * copy)
+        .html(formatize("metric", "%s", server.actual * copy));
     }
     fillResult(valueConfig, copy, space, server);
+  }
+  Event.dataSummary = function() {
+    rawSpace = rawServer = 0;
+    $("div.shopping-good").each(function (){
+      rawSpace  += parseFloat($(this).attr("raw-space"));
+      rawServer += parseFloat($(this).attr("raw-server"));
+    });
+    $("#result-sum-space").html(formatize("imperial", "%s", rawSpace) + "B");
+    $("#result-sum-server").html(formatize("metric", "%s", rawServer));
   }
 
   /**
@@ -220,6 +242,25 @@ $(document).ready(function() {
       }
       Event.dataChange("value-type", id);
     });
+  });
+
+  $("#button-add-to-cart").click(function (){
+    space     = $("#result-space").html();
+    rawSpace  = $("#result-space").attr("raw");
+    server    = $("#result-server").html();
+    rawServer = $("#result-server").attr("raw");
+    deleteGood = function(button) {
+      $(button).parent().remove();
+      Event.dataSummary();
+    }
+    $("#container-cart").append(
+      '<div class="badge shopping-good" raw-space="' + rawSpace + '" raw-server="' + rawServer + '">' +
+        '<strong>' + App.getValueType().label + '</strong> [' + space + '][' + server + '台]' +
+        '<span class="shopping-good-delete" onclick="javascript: deleteGood(this);">&times;</span>' +
+      '</div>'
+    );
+    Event.dataSummary();
+    return false;
   });
 
   Event.dataInit();

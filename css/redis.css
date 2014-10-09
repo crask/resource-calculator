@@ -10,3 +10,17 @@
 
 .region-desc {
 }
+
+.shopping-good {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  font-weight: normal;
+  cursor: default;
+}
+
+.shopping-good-delete {
+  margin-left: 5px;
+  cursor: pointer;
+}

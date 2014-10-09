@@ -89,10 +89,10 @@
     <div class="col-sm-3"><div id="slider-ui-write-qps" class="slider-ui"></div></div>
   </div>
   <div class="form-group">
-    <label class="col-sm-3 control-label" style="margin-top: 10px;">总资源量</label>
+    <label class="col-sm-3 control-label" style="margin-top: 10px;">当前资源量</label>
     <div class="col-sm-9">
       <div class="result">
-        数据量 =
+        当前数据量 =
         ( <span id="result-key-len" class="info" data-toggle="tooltip" title="Key的长度"></span> +
         <span id="result-value-multi-item">
           (<span id="result-item-len" class="info" data-toggle="tooltip" title="Item的平均长度"></span> +
@@ -104,13 +104,33 @@
         ) * <span id="result-key-num" class="info" data-toggle="tooltip" title="Key的个数"></span> *
         <span id="result-space-copy-num"></span>副本 *
         <span class="info" data-toggle="tooltip" title="jemalloc的额外开销">115%</span> =
-        <span id="result-space" class="quantity"></span></div>
-      <div class="result">需机器 =
+        <span id="result-space" class="quantity" raw=""></span></div>
+      <div class="result">当前需机器 =
         max(<span id="result-by-space" class="info" data-toggle="tooltip" title="按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
         <span id="result-by-cpu" class="info" data-toggle="tooltip" title="按CPU算需机器 = 读写QPS / 4万每台"></span>,
         <span id="result-by-net" class="info" data-toggle="tooltip" title="按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
         <span id="result-server-copy-num"></span>副本
-        = <span id="result-server" class="quantity"></span> 台</div>
+        = <span id="result-server" class="quantity" raw=""></span> 台</div>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom: 30px;">
+    <div class="col-sm-3"></div>
+    <div class="col-sm-9">
+      <button id="button-add-to-cart" type="button" class="btn btn-primary">
+        <span class="glyphicon glyphicon-shopping-cart"></span> 添加至购物车
+      </button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label">购物车</label>
+    <div id="container-cart" class="col-sm-7 non-form-elem-lg"></div>
+    <div class="col-sm-2"></div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" style="margin-top: 10px;">总资源量</label>
+    <div class="col-sm-9">
+      <div class="result">总数据量 = <span id="result-sum-space" class="quantity">0.00</span></div>
+      <div class="result">总需机器 = <span id="result-sum-server" class="quantity">0.00</span> 台</div>
     </div>
   </div>
 </form>
