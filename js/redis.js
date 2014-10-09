@@ -14,9 +14,7 @@ $(document).ready(function() {
     "key-num"  : {type: "metric",   min: 50, max: 100, default: 70, step: 1,  suffix: "个"},
     "item-num" : {type: "metric",   min: 0,  max: 70,  default: 13, step: 1,  suffix: "个"},
     "item-len" : {type: "imperial", min: 0,  max: 60,  default: 25, step: 1,  suffix: "B"},
-    "read-bat" : {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
     "read-qps" : {type: "metric",   min: 20, max: 70,  default: 30, step: 1,  suffix: "/s"},
-    "write-bat": {type: "metric",   min: 0,  max: 30,  default: 10, step: 1,  suffix: "个"},
     "write-qps": {type: "metric",   min: 10, max: 60,  default: 20, step: 1,  suffix: "/s"},
   };
 
@@ -86,12 +84,12 @@ $(document).ready(function() {
         total:  single.length * keyNum * 1.15
       }
     },
-    server: function(keyLen, keyNum, valueConfig, itemNum, itemLen, readBat, readQps, writeBat, writeQps) {
+    server: function(keyLen, keyNum, valueConfig, itemNum, itemLen, readQps, writeQps) {
       // server by space
       space = this.space(keyLen, keyNum, valueConfig, itemNum, itemLen);
       bySpace = space.total / (40 * Math.pow(10, 9));
       // server by cpu
-      allQps = readBat * readQps + writeBat * writeQps;
+      allQps = readQps + writeQps;
       byCpu = allQps / (4 * Math.pow(10, 4));
       // server by net throughput
       byNet = allQps * space.single.length / (70 * Math.pow(10, 6));
@@ -147,13 +145,11 @@ $(document).ready(function() {
     } else if (valueConfig.type == "multi-item") {
       itemNum = getSlider("item-num");
     }
-    readBat = getSlider("read-bat");
     readQps = getSlider("read-qps");
-    writeBat = getSlider("write-bat");
     writeQps = getSlider("write-qps");
 
     space  = Calculator.space(keyLen, keyNum, valueConfig, itemNum, itemLen);
-    server = Calculator.server(keyLen, keyNum, valueConfig, itemNum, itemLen, readBat, readQps, writeBat, writeQps);
+    server = Calculator.server(keyLen, keyNum, valueConfig, itemNum, itemLen, readQps, writeQps);
     fillResult = function(valueConfig, copy, space, server) {
       $("#result-key-len").html($("#slider-ui-key-len").html());
       $("#result-key-num").html($("#slider-ui-key-num").html());
