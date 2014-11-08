@@ -28,18 +28,23 @@ $(document).ready(function() {
       return this.single(keyLen, valueLen) * keyNum;
     },
     server: function(keyLen, keyNum, valueLen, readQps, writeQps) {
-      // server by memory
-      bySpace = this.space(keyLen, keyNum, valueLen) / (40 * Math.pow(10, 9));
-      // server by cpu
       allQps = readQps + writeQps;
-      byCpu = allQps / (4 * Math.pow(10, 4));
-      // server by throughput
-      byNet = allQps * this.single(keyLen, valueLen) / (70 * Math.pow(10, 6));
+      // proxy cpu/throughput
+      proxyByCpu = allQps / (4 * Math.pow(10, 4));
+      proxyByNet = allQps * this.single(keyLen, valueLen) / (70 * Math.pow(10, 6));
+      // cache cpu/throughput
+      cacheBySpace = this.space(keyLen, keyNum, valueLen) / (40 * Math.pow(10, 9));
+      cacheByNet   = allQps * this.single(keyLen, valueLen) / (70 * Math.pow(10, 6));
       return {
-        bySpace: bySpace,
-        byCpu  : byCpu,
-        byNet  : byNet,
-        actual : Math.max(bySpace, byNet, byCpu)
+        proxy : {
+          byCpu : proxyByCpu,
+          byNet : proxyByNet,
+        },
+        cache : {
+          bySpace: cacheBySpace,
+          byNet  : cacheByNet,
+        },
+        actual : Math.max(proxyByCpu, proxyByNet) + Math.max(cacheBySpace, cacheByNet),
       }
     }
   }
@@ -86,9 +91,10 @@ $(document).ready(function() {
       $("#result-space-copy-num").html(copy);
       $("#result-space").html(formatize("imperial", "%s", space * copy) + "B");
 
-      $("#result-by-space").html(server.bySpace.toFixed(2));
-      $("#result-by-cpu").html(server.byCpu.toFixed(2));
-      $("#result-by-net").html(server.byNet.toFixed(2));
+      $("#result-proxy-by-cpu").html(server.proxy.byCpu.toFixed(2));
+      $("#result-proxy-by-net").html(server.proxy.byNet.toFixed(2));
+      $("#result-cache-by-space").html(server.cache.bySpace.toFixed(2));
+      $("#result-cache-by-net").html(server.cache.byNet.toFixed(2));
       $("#result-server-copy-num").html(copy);
       $("#result-server").html(formatize("metric", "%s", server.actual * copy));
     }

@@ -74,9 +74,10 @@
         = <span id="result-space" class="quantity"></span>
       </div>
       <div class="result">需机器 =
-        max(<span id="result-by-space" class="info" data-toggle="tooltip" title="按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
-        <span id="result-by-cpu" class="info" data-toggle="tooltip" title="按CPU算需机器 = 读写QPS / 4万每台"></span>,
-        <span id="result-by-net" class="info" data-toggle="tooltip" title="按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
+        [max(<span id="result-proxy-by-cpu" class="info" data-toggle="tooltip" title="Proxy按CPU算需机器 = 读写QPS / 4万每台"></span>,
+        <span id="result-proxy-by-net" class="info" data-toggle="tooltip" title="Proxy按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) +
+        max(<span id="result-cache-by-space" class="info" data-toggle="tooltip" title="Cache按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
+        <span id="result-cache-by-net" class="info" data-toggle="tooltip" title="Cache按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>)] *
         <span id="result-server-copy-num"></span>副本
         = <span id="result-server" class="quantity"></span> 台</div>
     </div>
