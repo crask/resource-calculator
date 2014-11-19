@@ -10,7 +10,7 @@ $(document).ready(function() {
   };
 
   sliders = {
-    "key-len"  : {type: "plain",    min: 0,  max: 255, default: 64, step: 16, suffix: "B"},
+    "key-len"  : {type: "plain",    min: 0,  max: 1024, default: 64, step: 16, suffix: "B"},
     "key-num"  : {type: "metric",   min: 50, max: 100, default: 70, step: 1,  suffix: "个"},
     "item-num" : {type: "metric",   min: 0,  max: 70,  default: 13, step: 1,  suffix: "个"},
     "item-len" : {type: "imperial", min: 0,  max: 60,  default: 25, step: 1,  suffix: "B"},
