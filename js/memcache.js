@@ -82,7 +82,7 @@ $(document).ready(function() {
     readQps  = getSlider("read-qps");
     writeQps = getSlider("write-qps");
 
-    space  = Calculator.space(keyLen, keyNum, valueLen);
+    space  = Calculator.space(keyLen, keyNum, valueLen) * 1.1;
     server = Calculator.server(keyLen, keyNum, valueLen, readQps, writeQps);
     fillResult = function(copy, space, server) {
       $("#result-key-len").html($("#slider-ui-key-len").html());
