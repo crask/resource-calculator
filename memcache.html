@@ -74,13 +74,22 @@
         <span id="result-space-copy-num"></span>副本
         = <span id="result-space" class="quantity"></span>
       </div>
+      <div class="result">每请求耗流量 =
+        ceil(<span id="result-kv-len-1" class="info" data-toggle="tooltip" title="KV总长度"></span>B /
+        <span class="info" data-toggle="tooltip" title="TCP帧大小">1500</span>B) *
+        (<span class="info" data-toggle="tooltip" title="TCP协议的报头长度">16</span>B *
+        <span class="info" data-toggle="tooltip" title="TCP连接从建立到发包到断开的交互次数">9</span>次) +
+        <span id="result-kv-len-2" class="info" data-toggle="tooltip" title="KV总长度"></span>B
+        = <span id="result-net-per-req"></span>
+      </div>
       <div class="result">需机器 =
         [max(<span id="result-proxy-by-cpu" class="info" data-toggle="tooltip" title="Proxy按CPU算需机器 = 读写QPS / 4万每台"></span>,
         <span id="result-proxy-by-net" class="info" data-toggle="tooltip" title="Proxy按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) +
         max(<span id="result-cache-by-space" class="info" data-toggle="tooltip" title="Cache按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
         <span id="result-cache-by-net" class="info" data-toggle="tooltip" title="Cache按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>)] *
         <span id="result-server-copy-num"></span>副本
-        = <span id="result-server" class="quantity"></span> 台</div>
+        = <span id="result-server" class="quantity"></span> 台
+      </div>
     </div>
     <div class="col-sm-3"></div>
   </div>
