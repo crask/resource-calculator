@@ -28,13 +28,16 @@ $(document).ready(function() {
       return this.single(keyLen, valueLen) * keyNum;
     },
     net: function(keyLen, valueLen) {
-      return Math.ceil(this.single(keyLen, valueLen) / 1500) * 162 + this.single(keyLen, valueLen);
+      return {
+        cache: 0,
+        proxy: Math.ceil(this.single(keyLen, valueLen) / 1500) * 162 + this.single(keyLen, valueLen)
+      };
     },
     server: function(keyLen, keyNum, valueLen, readQps, writeQps) {
       allQps = readQps + writeQps;
       // proxy cpu/throughput
       proxyByCpu = allQps / (4 * Math.pow(10, 4));
-      proxyByNet = allQps * this.net(keyLen, valueLen) / (70 * Math.pow(10, 6));
+      proxyByNet = allQps * this.net(keyLen, valueLen).proxy / (70 * Math.pow(10, 6));
       // cache cpu/throughput
       cacheBySpace = this.space(keyLen, keyNum, valueLen) / (40 * Math.pow(10, 9));
       cacheByNet   = allQps * this.single(keyLen, valueLen) / (70 * Math.pow(10, 6));
@@ -96,7 +99,7 @@ $(document).ready(function() {
 
       $("#result-kv-len-1").html(keyLen + valueLen);
       $("#result-kv-len-2").html(keyLen + valueLen);
-      $("#result-net-per-req").html(Calculator.net(keyLen, valueLen).toFixed(2) + "B");
+      $("#result-net-per-req").html(Calculator.net(keyLen, valueLen).proxy.toFixed(0) + "B");
 
       $("#result-proxy-by-cpu").html(server.proxy.byCpu.toFixed(2));
       $("#result-proxy-by-net").html(server.proxy.byNet.toFixed(2));
