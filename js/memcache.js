@@ -14,7 +14,8 @@ $(document).ready(function() {
     "key-num"   : {type: "metric",   min: 50, max: 115, default: 80, step: 1,  suffix: "个"},
     "value-len" : {type: "imperial", min: 0,  max: 60,  default: 30, step: 1,  suffix: "B"},
     "read-qps"  : {type: "metric",   min: 20, max: 80,  default: 40, step: 1,  suffix: "/s"},
-    "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"}
+    "write-qps" : {type: "metric",   min: 10, max: 70,  default: 30, step: 1,  suffix: "/s"},
+    "redundancy": {type: "plain",    min: 0,  max: 100, default: 50, step: 10, suffix: "%"}
   };
 
   /**
@@ -50,7 +51,7 @@ $(document).ready(function() {
           bySpace: cacheBySpace,
           byNet  : cacheByNet,
         },
-        actual : Math.max(proxyByCpu, proxyByNet) + Math.max(cacheBySpace, cacheByNet),
+        actual : Math.max(proxyByCpu, proxyByNet) * multiplex + Math.max(cacheBySpace, cacheByNet * multiplex),
       }
     }
   }
@@ -87,9 +88,11 @@ $(document).ready(function() {
     valueLen = getSlider("value-len");
     readQps  = getSlider("read-qps");
     writeQps = getSlider("write-qps");
+    redundancy = getSlider("redundancy");
+    multiplex = redundancy / 100 + 1;
 
     space  = Calculator.space(keyLen, keyNum, valueLen) * 1.1;
-    server = Calculator.server(keyLen, keyNum, valueLen, readQps, writeQps);
+    server = Calculator.server(keyLen, keyNum, valueLen, readQps, writeQps, multiplex);
     fillResult = function(copy, space, server) {
       $("#result-key-len").html($("#slider-ui-key-len").html());
       $("#result-key-num").html($("#slider-ui-key-num").html());
@@ -103,8 +106,10 @@ $(document).ready(function() {
 
       $("#result-proxy-by-cpu").html(server.proxy.byCpu.toFixed(2));
       $("#result-proxy-by-net").html(server.proxy.byNet.toFixed(2));
+      $("#result-proxy-redundancy").html((100 + redundancy) + '%');
       $("#result-cache-by-space").html(server.cache.bySpace.toFixed(2));
       $("#result-cache-by-net").html(server.cache.byNet.toFixed(2));
+      $("#result-cache-redundancy").html((100 + redundancy) + '%');
       $("#result-server-copy-num").html(copy);
       $("#result-server").html(formatize("metric", "%s", server.actual * copy));
     }

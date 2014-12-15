@@ -64,6 +64,11 @@
     <div class="col-sm-3"><div id="slider-ui-write-qps" class="slider-ui"></div></div>
   </div>
   <div class="form-group">
+    <label class="col-sm-3 control-label">冗余度</label>
+    <div class="col-sm-6"><div id="slider-redundancy" class="non-form-elem"></div></div>
+    <div class="col-sm-3"><div id="slider-ui-redundancy" class="slider-ui"></div></div>
+  </div>
+  <div class="form-group">
     <label class="col-sm-3 control-label" style="margin-top: 10px;">总资源量</label>
     <div class="col-sm-6">
       <div class="result">数据量 =
@@ -84,9 +89,11 @@
       </div>
       <div class="result">需机器 =
         [max(<span id="result-proxy-by-cpu" class="info" data-toggle="tooltip" title="Proxy按CPU算需机器 = 读写QPS / 4万每台"></span>,
-        <span id="result-proxy-by-net" class="info" data-toggle="tooltip" title="Proxy按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) +
+        <span id="result-proxy-by-net" class="info" data-toggle="tooltip" title="Proxy按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>) *
+	<span id="result-proxy-redundancy" class="info" data-toggle="tooltip" title="Proxy 的冗余度"></span> +
         max(<span id="result-cache-by-space" class="info" data-toggle="tooltip" title="Cache按内存算需机器 = 数据量 / 40GB每台(64G*60%)"></span>,
-        <span id="result-cache-by-net" class="info" data-toggle="tooltip" title="Cache按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span>)] *
+        <span id="result-cache-by-net" class="info" data-toggle="tooltip" title="Cache按网卡算 = 读写QPS * KV总长度/ 70MB每台"></span> *
+	<span id="result-cache-redundancy" class="info" data-toggle="tooltip" title="Cache 的冗余度"></span>)] *
         <span id="result-server-copy-num"></span>副本
         = <span id="result-server" class="quantity"></span> 台
       </div>
