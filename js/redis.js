@@ -70,7 +70,7 @@ $(document).ready(function() {
    *  formula of resource calculation
    */
   Calculator = {
-    single: function(keyLen, valueConfig, itemNum, itemLen) {
+    singleSpace: function(keyLen, valueConfig, itemNum, itemLen) {
       if (itemNum <= valueConfig.threshold.num &&
           itemLen <= valueConfig.threshold.len) {
         overhead = valueConfig.overhead.zipped;
@@ -82,8 +82,11 @@ $(document).ready(function() {
         length:   keyLen + (itemLen + overhead.item) * itemNum + overhead.value
       }
     },
+    singleNet: function (keyLen, valueConfig, itemNum, itemLen) {
+        return itemNum * (itemLen + 6)
+    },
     space: function(keyLen, keyNum, valueConfig, itemNum, itemLen) {
-      single = this.single(keyLen, valueConfig, itemNum, itemLen);
+      single = this.singleSpace(keyLen, valueConfig, itemNum, itemLen);
       return {
         single: single,
         total:  single.length * keyNum * 1.15
@@ -97,7 +100,8 @@ $(document).ready(function() {
       allQps = readQps + writeQps;
       byCpu = allQps / (4 * Math.pow(10, 4));
       // server by net throughput
-      byNet = allQps * space.single.length / (70 * Math.pow(10, 6));
+      net = this.singleNet(keyLen, valueConfig, itemNum, itemLen);
+      byNet = allQps * net / (70 * Math.pow(10, 6));
       return {
         bySpace : bySpace,
         byCpu   : byCpu,
